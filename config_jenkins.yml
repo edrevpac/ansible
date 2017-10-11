@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  
+  become: true
+
+  vars:
+    # Variable holding the login credentials
+    my_jenkins_params:
+      url_username: admin
+      url_password: 8b71957b29754b4e8323fcd039eaff38
+      url: http://192.168.56.195:8080
+
+  tasks:
+
+  - name: install plugins
+    jenkins_plugin:
+      name: github
+      # This is where we use the above variable
+      params: "{{ my_jenkins_params }}"
+      state: present
+
+  - name: restart jenkins if required
+    service:
+      name: jenkins
+      state: restarted
+    when: jenkins_restart_required

@@ -1,0 +1,18 @@
+---
+
+- hosts: all
+
+  become: true
+
+  tasks:
+
+#  - name: Sleep for 30 seconds until port 22 is available
+#    wait_for:
+#      port: 22
+#      delay: 30
+
+  - name: install git
+    apt: 
+      update_cache: yes
+      name: git
+      state: latest

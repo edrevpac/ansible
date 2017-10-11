@@ -1,0 +1,7 @@
+---
+
+- import_playbook: install_git.yml
+- import_playbook: install_jdk.yml
+- import_playbook: install_jenkins.yml
+- import_playbook: install_nginx.yml
+- import_playbook: install_maven.yml
