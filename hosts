@@ -3,12 +3,13 @@ jenkins ansible_host=192.168.56.196 ansible_user=vagrant
 tomcat ansible_host=192.168.56.197 ansible_user=vagrant
 
 [staging]
-test    
+test
 
-[production]
+[app]
 jenkins
-tomcat
 
+[web]
+tomcat
 
 # This is the default ansible 'hosts' file.
 #

@@ -8,10 +8,16 @@
     # Variable holding the login credentials
     my_jenkins_params:
       url_username: admin
-      url_password: 8b71957b29754b4e8323fcd039eaff38
+      url_password: "{{jenkins_pass.stdout}}"
       url: http://192.168.56.195:8080
 
   tasks:
+
+
+  - name: get jenkins initial admin password
+    command: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: jenkins_pass
+    become_user: root
 
   - name: install plugins
     jenkins_plugin:
@@ -24,4 +30,3 @@
     service:
       name: jenkins
       state: restarted
-    when: jenkins_restart_required

@@ -1,7 +1,30 @@
 ---
 
-- import_playbook: install_git.yml
-- import_playbook: install_jdk.yml
-- import_playbook: install_jenkins.yml
-- import_playbook: install_nginx.yml
-- import_playbook: install_maven.yml
+- hosts: all
+  
+  become: true
+
+  vars:
+    # Variable holding the login credentials
+    my_jenkins_params:
+      url_username: admin
+#      url_password: "{{jenkins_pass.stdout}}"
+      url: http://192.168.56.195:8080
+
+  tasks:
+
+  - name: get jenkins initial admin password
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: url_password
+    become_user: root
+
+  - debug:
+      msg: "{{ url_password.stdout }}"
+
+
+#- import_playbook: install_git.yml
+#- import_playbook: install_jdk.yml
+#- import_playbook: install_jenkins.yml
+#- import_playbook: install_tomcat.yml
+#- import_playbook: install_maven.yml
+#- import_playbook: config_jenkins.yml

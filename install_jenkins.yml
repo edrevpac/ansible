@@ -6,6 +6,12 @@
 
   tasks:
 
+  - name: install git
+    apt: 
+      update_cache: yes
+      name: git
+      state: latest
+
   - name: create jenkins user
     user:
       name: jenkins
