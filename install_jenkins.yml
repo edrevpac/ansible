@@ -6,36 +6,53 @@
 
   tasks:
 
-  - name: install JDK
-    apt:
-      update_cache: yes
-      name: default-jdk-headless
-      state: present
 
-  - name: set JAVA_HOME environment variables
-    lineinfile:
-      path: ~/.profile
-      line: 'JAVA_HOME=/usr/lib/jvm/default-java'
-      insertbefore: BOF
-    become_user: vagrant
+#  - name: set jdk environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'JAVA_HOME=/usr/lib/jvm/default-java'
+#      insertbefore: BOF
+#    become_user: vagrant
 
-  - name: set JRE_HOME environment variables
-    lineinfile:
-      path: ~/.profile
-      line: 'JRE_HOME=/usr/lib/jvm/default-java/jre'
-      insertbefore: BOF
-    become_user: vagrant
+#  - name: set jre environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'JRE_HOME=/usr/lib/jvm/default-java/jre'
+#      insertbefore: BOF
+#    become_user: vagrant
 
-  - name: install apt-transport-https to handle https requests
-    apt:
-      name: apt-transport-https
-      state: present
+#  - name: set maven environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'M2_HOME=/usr/share/maven/'
+#      insertbefore: BOF
 
-  - name: install git
+#  - name: set maven environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'M2=/usr/share/maven/bin'
+#      insertbefore: BOF
+
+#  - name: set maven environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'PATH=/usr/share/maven/bin:$PATH'
+#      insertbefore: BOF
+
+#  - name: set jenkins home environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'JENKINS_HOME=/var/lib/jenkins'
+#      insertbefore: BOF
+#    become_user: vagrant
+
+
+  - name: install jdk8 and https support
     apt: 
-      update_cache: yes
-      name: git
-      state: latest
+      name: 
+        - apt-transport-https
+        - default-jdk-headless
+      state: present
 
   - name: import jenkins key
     apt_key: 
@@ -47,47 +64,104 @@
       repo: deb https://pkg.jenkins.io/debian binary/
       state: present
 
-  - name: install jenkins
+  - name: install jenkins & prerequisites
     apt:
+      name:
+        - git
+        - maven
+        - jenkins
+#        - nginx
       update_cache: yes
-      name: jenkins
-      state: present
 
-  - name: create jenkins user
-    user:
-      name: jenkins
-      home: /var/lib/jenkins
-
-
-  - name: give the new user authority
-    file:
-      path: /var/lib/jenkins
-      owner: jenkins
-      group: jenkins
-      mode: 0755
-
-
-  - name: set user password
+  - name: set new jenkins password
     shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
 
-  - name: set environment variables
-    lineinfile:
-      path: ~/.profile
-      line: 'JENKINS_HOME=/var/lib/jenkins'
-      insertbefore: BOF
-    become_user: vagrant
-
-  - name: skip jenkins initial setup
+  - name: skip jenkins initial setup wizard
     lineinfile:
       path: /etc/default/jenkins
       line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
       insertbefore: BOF
 
-  - name: enable service to run on boot
+  - name: get jenkins initial admin password
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: password_var
+    become_user: root
+
+  - name: set jenkins admin password fact
+    set_fact:
+      jenkins_password: '{{ password_var.stdout }}'
+
+  - debug:
+      msg: '{{ password_var.stdout }}'
+
+  - name: install plugin
+    jenkins_plugin:
+      name: git
+      params:
+        url: http://192.168.56.196:8080
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
+      state: present
+
+  - name: install plugin
+    jenkins_plugin:
+      name: deploy
+      params:
+        url: http://192.168.56.196:8080
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
+      state: present
+
+
+  - name: grab the pre-configured files from wonderland
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/{{item}}
+      dest: /var/lib/jenkins
+      owner: jenkins
+      group: jenkins
+#      mode: 0755 / u=rw,go=r
+    with_items:
+      - config.xml
+      - credentials.xml
+      - hudson.tasks.Maven.xml
+      - jenkins.model.JenkinsLocationConfiguration.xml
+      - jenkins.mvn.GlobalMavenConfig.xml
+      - org.jenkinsci.plugins.gitclient.JGitApacheTool.xml
+      - org.jenkinsci.plugins.gitclient.JGitTool.xml
+      - hudson.model.Job.serverCookie
+      - hudson.plugins.git.GitSCM.xml
+      - hudson.tasks.Mailer.xml
+      - hudson.tasks.Shell.xml
+      - hudson.triggers.SCMTrigger.xml
+      - jenkins.model.ArtifactManagerConfiguration.xml
+
+
+  - name: create the jobs folder
+    file:
+      path: /var/lib/jenkins/jobs/hello_world
+      state: directory
+      owner: jenkins
+      group: jenkins
+#      mode: 0755 / u=rw,go=r
+
+  - name: grab the pre-configured files from wonderland
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/hello_world/config.xml
+      dest: /var/lib/jenkins/jobs/hello_world
+      owner: jenkins
+      group: jenkins
+#      mode: 0755 / u=rw,go=r
+
+  - name: restart jenkins if required
     service:
       name: jenkins
-      enabled: yes
       state: restarted
+
+#  - name: enable nginx service to run on boot
+#    service:
+#      name: nginx
+#      enabled: yes
+#      state: restarted
 
 #  - name: allow traffic to port 8080 so that jenkins web-interface is accessible
 #    shell: firewall-cmd --zone=public --permanent --add-port=8080/tcp

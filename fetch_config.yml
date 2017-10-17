@@ -1,0 +1,25 @@
+---
+
+- hosts: all
+
+  become: true
+
+  tasks: 
+
+  - name: fetch config files from the remote and save to local
+    synchronize:  src={{ item }} dest=/home/cap/jenkins mode=pull
+    with_items:
+      - /var/lib/jenkins/config.xml
+#      - /var/lib/jenkins/credentials.xml
+#      - /var/lib/jenkins/hudson.plugins.git.GitSCM.xml
+#      - /var/lib/jenkins/hudson.tasks.Mailer.xml
+#      - /var/lib/jenkins/hudson.tasks.Maven.xml
+#      - /var/lib/jenkins/hudson.tasks.Shell.xml
+#      - /var/lib/jenkins/hudson.triggers.SCMTrigger.xml
+#      - /var/lib/jenkins/jenkins.model.ArtifactManagerConfiguration.xml
+#      - /var/lib/jenkins/jenkins.model.JenkinsLocationConfiguration.xml
+#      - /var/lib/jenkins/jenkins.mvn.GlobalMavenConfig.xml
+#      - /var/lib/jenkins/jobs/hello_world/config.xml
+#      - /var/lib/jenkins/org.jenkinsci.plugins.gitclient.JGitApacheTool.xml
+#      - /var/lib/jenkins/org.jenkinsci.plugins.gitclient.JGitTool.xml
+#      - /var/lib/jenkins/secrets/hudson.model.Job.serverCookie

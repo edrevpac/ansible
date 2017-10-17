@@ -36,9 +36,7 @@ with:
 
 
 
-#- import_playbook: install_git.yml
-#- import_playbook: install_jdk.yml
+
 #- import_playbook: install_jenkins.yml
 #- import_playbook: install_tomcat.yml
-#- import_playbook: install_maven.yml
 #- import_playbook: config_jenkins.yml
