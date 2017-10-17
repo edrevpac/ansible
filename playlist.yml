@@ -1,25 +1,39 @@
----
+USE ROOT:
 
-- hosts: all
-  
-  become: true
+in file:
 
-  vars:
-    # Variable holding the login credentials
-    my_jenkins_params:
-      url_username: admin
-#      url_password: "{{jenkins_pass.stdout}}"
-      url: http://192.168.56.195:8080
+/var/lib/tomcat8/conf/server.xml
 
-  tasks:
+find:
 
-  - name: get jenkins initial admin password
-    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
-    register: url_password
-    become_user: root
+<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
 
-  - debug:
-      msg: "{{ url_password.stdout }}"
+
+
+replace with:
+
+<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000" redirectPort="8443" 
+               address="192.168.56.197" useIPVHosts="true" />
+
+
+and create file:
+
+/var/lib/tomcat8/conf/Catalina/localhost/manager.xml
+
+
+with:
+
+
+<Context antiResourceLocking="false" privileged="true" >
+    <!--
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+    -->
+</Context>
+
 
 
 #- import_playbook: install_git.yml

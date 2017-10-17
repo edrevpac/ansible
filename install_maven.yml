@@ -1,6 +1,8 @@
 ---
 
 - hosts: all
+
+  become: true
   
   tasks:
 
@@ -8,43 +10,43 @@
     get_url:
       url: http://www-eu.apache.org/dist/maven/maven-3/3.5.0/binaries/apache-maven-3.5.0-bin.zip
       dest: /
-    become: true
 
   - name: install unzip
     apt:
       name: unzip
       state: present
-    become: true
 
-  - name: download and extract Maven archive
+  - name: extract Maven archive
     unarchive: 
       src: /apache-maven-3.5.0-bin.zip
       dest: /opt
       remote_src: yes
-    become: true
 
-  - name: create symlink
-    file:
-      src: /opt/apache-maven-3.5.0
-      dest: /maven
-      owner: vagrant
-      state: link
-    become: true
+  - name: give a proper name
+    shell: mv /opt/apache-maven-3.5.0 /opt/maven
+
+#  - name: create symlink
+#    file:
+#      src: /opt/apache-maven-3.5.0
+#      dest: /maven
+#      owner: vagrant
+#      state: link
+#    become: true
 
   - name: set environment variables
     lineinfile:
       path: ~/.profile
-      line: 'M2_HOME=/opt/apache-maven-3.5.0'
+      line: 'M2_HOME=/opt/maven'
       insertbefore: BOF
 
   - name: set environment variables
     lineinfile:
       path: ~/.profile
-      line: 'M2=/opt/apache-maven-3.5.0/bin'
+      line: 'M2=/opt/maven/bin'
       insertbefore: BOF
 
   - name: set environment variables
     lineinfile:
       path: ~/.profile
-      line: 'PATH=/opt/apache-maven-3.5.0/bin:$PATH'
+      line: 'PATH=/opt/maven/bin:$PATH'
       insertbefore: BOF

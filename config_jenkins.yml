@@ -4,29 +4,49 @@
   
   become: true
 
-  vars:
-    # Variable holding the login credentials
-    my_jenkins_params:
-      url_username: admin
-      url_password: "{{jenkins_pass.stdout}}"
-      url: http://192.168.56.195:8080
-
   tasks:
 
-
   - name: get jenkins initial admin password
-    command: cat /var/lib/jenkins/secrets/initialAdminPassword
-    register: jenkins_pass
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: password_var
     become_user: root
 
-  - name: install plugins
+  - name: set jenkins admin password fact
+    set_fact:
+      jenkins_password: '{{ password_var.stdout }}'
+
+  - debug:
+      msg: '{{ password_var.stdout }}'
+
+  - name: install plugin
     jenkins_plugin:
-      name: github
-      # This is where we use the above variable
-      params: "{{ my_jenkins_params }}"
+      name: git
+      params:
+        url: http://192.168.56.195:8080 
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
       state: present
+
+  - name: install plugin
+    jenkins_plugin:
+      name: deploy
+      params:
+        url: http://192.168.56.195:8080 
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
+      state: present
+
+
+
+
 
   - name: restart jenkins if required
     service:
       name: jenkins
       state: restarted
+
+  - name: wait
+    wait_for:
+      timeout: 10
+
+  

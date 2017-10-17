@@ -6,20 +6,6 @@
 
   tasks:
 
-  - name: install git
-    apt: 
-      update_cache: yes
-      name: git
-      state: latest
-
-  - name: create jenkins user
-    user:
-      name: jenkins
-      home: /var/lib/jenkins
-
-  - name: set user password
-    shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
-
   - name: install JDK
     apt:
       update_cache: yes
@@ -45,6 +31,12 @@
       name: apt-transport-https
       state: present
 
+  - name: install git
+    apt: 
+      update_cache: yes
+      name: git
+      state: latest
+
   - name: import jenkins key
     apt_key: 
       url: https://pkg.jenkins.io/debian/jenkins.io.key
@@ -61,10 +53,27 @@
       name: jenkins
       state: present
 
+  - name: create jenkins user
+    user:
+      name: jenkins
+      home: /var/lib/jenkins
+
+
+  - name: give the new user authority
+    file:
+      path: /var/lib/jenkins
+      owner: jenkins
+      group: jenkins
+      mode: 0755
+
+
+  - name: set user password
+    shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
+
   - name: set environment variables
     lineinfile:
       path: ~/.profile
-      line: 'jenkins_HOME=/var/lib/jenkins'
+      line: 'JENKINS_HOME=/var/lib/jenkins'
       insertbefore: BOF
     become_user: vagrant
 
