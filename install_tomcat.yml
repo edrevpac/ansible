@@ -22,6 +22,10 @@
       repo: https://github.com/edrevpac/tomcat.git
       dest: /opt/tomcat
 
+  - name: wait a while and listen
+    wait_for:
+      timeout: 10
+
   - name: fire that bad boy up
     shell: /opt/tomcat/bin/startup.sh
     become_user: root

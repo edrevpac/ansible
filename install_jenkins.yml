@@ -155,7 +155,7 @@
 
   - name: grab some other pre-configured files from wonderland
     get_url: 
-      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/hello_world/config.xml
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/jobs/hello_world/config.xml
       dest: /var/lib/jenkins/jobs/hello_world
       owner: jenkins
       group: jenkins
