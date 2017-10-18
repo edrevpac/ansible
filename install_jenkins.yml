@@ -4,6 +4,9 @@
 
   become: true
 
+  environment:
+    JAVA_HOME: /usr/lib/jvm/default-java
+
   tasks:
 
 
@@ -53,6 +56,7 @@
         - apt-transport-https
         - default-jdk-headless
       state: present
+      update_cache: yes
 
   - name: import jenkins key
     apt_key: 
@@ -82,10 +86,13 @@
       line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
       insertbefore: BOF
 
+  - name: wait a while and listen
+    wait_for:
+      timeout: 60
+
   - name: get jenkins initial admin password
     shell: cat /var/lib/jenkins/secrets/initialAdminPassword
     register: password_var
-    become_user: root
 
   - name: set jenkins admin password fact
     set_fact:
@@ -103,7 +110,7 @@
         url_password: '{{ jenkins_password }}'
       state: present
 
-  - name: install plugin
+  - name: install another plugin
     jenkins_plugin:
       name: deploy
       params:
@@ -123,18 +130,20 @@
     with_items:
       - config.xml
       - credentials.xml
+      - hudson.model.Job.serverCookie
+      - hudson.model.UpdateCenter.xml
+      - hudson.plugins.git.GitSCM.xml
+      - hudson.plugins.git.GitTool.xml
+      - hudson.tasks.Mailer.xml
       - hudson.tasks.Maven.xml
+      - hudson.tasks.Shell.xml
+      - hudson.triggers.SCMTrigger.xml
+      - jenkins.model.ArtifactManagerConfiguration.xml
+      - jenkins.model.DownloadSettings.xml
       - jenkins.model.JenkinsLocationConfiguration.xml
       - jenkins.mvn.GlobalMavenConfig.xml
       - org.jenkinsci.plugins.gitclient.JGitApacheTool.xml
       - org.jenkinsci.plugins.gitclient.JGitTool.xml
-      - hudson.model.Job.serverCookie
-      - hudson.plugins.git.GitSCM.xml
-      - hudson.tasks.Mailer.xml
-      - hudson.tasks.Shell.xml
-      - hudson.triggers.SCMTrigger.xml
-      - jenkins.model.ArtifactManagerConfiguration.xml
-
 
   - name: create the jobs folder
     file:
@@ -144,7 +153,7 @@
       group: jenkins
 #      mode: 0755 / u=rw,go=r
 
-  - name: grab the pre-configured files from wonderland
+  - name: grab some other pre-configured files from wonderland
     get_url: 
       url: https://raw.githubusercontent.com/edrevpac/jenkins/master/hello_world/config.xml
       dest: /var/lib/jenkins/jobs/hello_world
@@ -162,15 +171,3 @@
 #      name: nginx
 #      enabled: yes
 #      state: restarted
-
-#  - name: allow traffic to port 8080 so that jenkins web-interface is accessible
-#    shell: firewall-cmd --zone=public --permanent --add-port=8080/tcp
-#           firewall-cmd --reload
-#    ignore_errors: yes
-
-#  - name: Restart server
-#    shell: sleep 2 && /sbin/shutdown -r now "GOING DOWN!!!"
-
-#  - name: waiting 30 secs for server to come back
-#    local_action: wait_for host={{ ansible_default_ipv4.address }} port=22 state=started delay=30 timeout=60
-#    become: false

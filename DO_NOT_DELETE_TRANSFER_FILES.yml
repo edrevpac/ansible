@@ -7,9 +7,12 @@
   tasks: 
 
   - name: fetch config files from the remote and save to local
-    synchronize:  src={{ item }} dest=/home/cap/jenkins mode=pull
+    synchronize:  
+      src: "{{ item }}" 
+      dest: /home/cap/jenkins 
+      mode: pull
     with_items:
-      - /var/lib/jenkins/config.xml
+#      - /var/lib/jenkins/config.xml
 #      - /var/lib/jenkins/credentials.xml
 #      - /var/lib/jenkins/hudson.plugins.git.GitSCM.xml
 #      - /var/lib/jenkins/hudson.tasks.Mailer.xml

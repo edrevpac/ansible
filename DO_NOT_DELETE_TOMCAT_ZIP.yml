@@ -1,0 +1,116 @@
+---
+
+- hosts: all
+
+  become: true  
+
+  environment:
+    JAVA_HOME: /usr/lib/jvm/default-java
+
+  tasks:
+
+  - name: install tomcat & prerequisites
+    apt:
+      name:
+        - git
+        - default-jdk-headless
+
+  - name: creating tomcat user group
+    group:
+      name: tomcat
+      state: present
+
+  - name: creating tomcat service account
+    user:
+      name: tomcat
+      group: tomcat
+      home: /opt/tomcat
+      state: present
+
+  - name: set jdk environment variables
+    lineinfile:
+      path: /opt/tomcat/.bashrc
+      line: 'JAVA_HOME=/usr/lib/jvm/default-java'
+      insertbefore: BOF
+
+  - name: set jre environment variables
+    lineinfile:
+      path: /opt/tomcat/.bashrc
+      line: 'JRE_HOME=/usr/lib/jvm/default-java/jre'
+      insertbefore: BOF
+
+  - name: set tomcat environment variables
+    lineinfile:
+      path: /opt/tomcat/.bashrc
+      line: 'CATALINA_HOME=/opt/tomcat'
+      insertbefore: BOF
+
+  - name: set a password
+    shell: (echo 123 ; sleep 1; echo 123) | passwd tomcat
+
+  - name: unpack the archive
+    unarchive:
+      remote_src: yes
+      src: https://www-us.apache.org/dist/tomcat/tomcat-8/v8.5.23/bin/apache-tomcat-8.5.23.tar.gz
+      dest: /opt
+      mode: u=rwX,g=rX,o=rX
+      owner: tomcat
+      group: tomcat
+
+  - name: rename the folder to something fun
+    command: cp -a /opt/apache-tomcat-8.5.23/. /opt/tomcat
+
+  - name: give the proper permissions
+    file: 
+      path: /opt/tomcat/
+#      mode: u=rwX,g=rX,o=rX
+      state: directory
+      recurse: yes
+      owner: tomcat
+      group: tomcat
+
+  - name: configure a startup script for tomcat
+    blockinfile:
+      block: |
+        [Unit]
+        Description=Apache Tomcat 8.x Web Application Container
+        Wants=network.target
+        After=network.target
+
+        [Service]
+        Type=forking
+
+        Environment=JAVA_HOME=/usr/lib/jvm/default-java
+        Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid
+        Environment=CATALINA_HOME=/opt/tomcat
+        Environment='CATALINA_OPTS=-Xms512M -Xmx1G -Djava.net.preferIPv4Stack=true'
+        Environment='JAVA_OPTS=-Djava.awt.headless=true'
+
+        ExecStart=/opt/tomcat/bin/startup.sh
+        ExecStop=/opt/tomcat/bin/shutdown.sh
+        SuccessExitStatus=143
+
+        User=tomcat
+        Group=tomcat
+        UMask=0007
+        RestartSec=10
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
+      path: /etc/systemd/system/tomcat.service
+      create: yes
+      owner: tomcat
+      group: tomcat
+  
+  - name: let us kickstart it
+    shell: /opt/tomcat/bin/startup.sh
+
+  - name: restart systemctl to take changes into account
+    command: systemctl daemon-reload 
+
+  - name: make tomcat start on boot
+    service:
+      name: tomcat
+      enabled: yes
+      state: started

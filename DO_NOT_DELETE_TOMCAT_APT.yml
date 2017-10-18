@@ -1,0 +1,82 @@
+---
+
+- hosts: all
+
+  become: true
+
+  tasks:
+
+
+#  - name: set jdk environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'JAVA_HOME=/usr/lib/jvm/default-java'
+#      insertbefore: BOF
+
+#  - name: set jre environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'JRE_HOME=/usr/lib/jvm/default-java/jre'
+#      insertbefore: BOF
+
+#  - name: set tomcat environment variables
+#    lineinfile:
+#      path: ~/.profile
+#      line: 'CATALINA_HOME=/var/lib/tomcat8'
+#      insertbefore: BOF
+#    become_user: vagrant
+
+
+  - name: install tomcat & prerequisites
+    apt:
+      name:
+        - git
+        - default-jdk-headless
+        - tomcat8
+        - tomcat8-docs
+        - tomcat8-user
+        - tomcat8-admin
+        - tomcat8-examples
+      update_cache: yes
+
+  - name: remove pre-made tomcat-users file so we can set up our own
+    file:
+      path: /var/lib/tomcat8/conf/tomcat-users.xml
+      state: absent
+
+#  - name: create new tomcat-users file
+#    file:
+#      path: /var/lib/tomcat8/conf/tomcat-users.xml
+#      state: touch
+#      mode: "u=rw,g=r,o=r"
+
+  - name: create new tomcat user 
+    blockinfile:
+      path: /var/lib/tomcat8/conf/tomcat-users.xml
+      create: yes
+      mode: "u=rw,g=r,o=r"
+      block: |
+        <?xml version="1.0" encoding="UTF-8?>
+        <tomcat-users>
+        <role rolename="manager-gui,manager-script"/>
+        <user username="tomcat" password="123abc" roles="manager-gui,manager-script"/>
+        </tomcat-users>
+
+  - name: cleaning up
+    file: 
+      path: /var/lib/tomcat8/webapps
+      state: absent
+
+  - name: fixing the crappy install...
+    git: 
+      repo: https://github.com/edrevpac/webapps.git
+      dest: /var/lib/tomcat8/webapps
+
+  - name: set new tomcat password
+    shell: (echo 123 ; sleep 1; echo 123) | passwd tomcat8
+
+  - name: enable tomcat8 service to run on boot
+    service:
+      name: tomcat8
+      enabled: yes
+      state: restarted
