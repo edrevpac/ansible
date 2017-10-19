@@ -119,6 +119,18 @@
         url_password: '{{ jenkins_password }}'
       state: present
 
+  - name: wait a while and listen, sip cofee, smoke pipe, smile
+    wait_for:
+      timeout: 10
+
+  - name: restart the "thing"... because why not!
+    service:
+      name: jenkins
+      state: restarted
+
+  - name: wait a while and listen, sip cofee, smoke pipe, smile
+    wait_for:
+      timeout: 60
 
   - name: grab some configuration files from wonderland
     get_url: 
