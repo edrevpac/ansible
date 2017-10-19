@@ -7,37 +7,91 @@
   environment:
     JAVA_HOME: /usr/lib/jvm/default-java
 
-  vars: 
-    service: tomcat
-    service_domain: tomcat
-    service_port: 8081
-
   tasks:
 
-  - name: install misc stuff
+  - name: start your day
+    apt: 
+      name: apt-transport-https
+      state: present
+      update_cache: yes
+
+  - name: remember where you left your keys
+    apt_key: 
+      url: https://nginx.org/keys/nginx_signing.key
+      state: present
+
+  - name: make a note not to forget your keys again
+    apt_repository:
+      repo: deb http://nginx.org/packages/debian/ stretch nginx
+      state: present
+
+  - name: make a 2nd note for good measure
+    apt_repository:
+      repo: deb-src http://nginx.org/packages/debian/ stretch nginx
+      state: present
+
+  - name: grab some misc stuff
+    apt: 
+      name: nginx
+      state: present
+      update_cache: yes
+
+  - name: start that bad boy and take it for a spin
+    service: 
+      name: nginx
+      enabled: yes
+      state: started
+
+  - name: get fancy with config files
+    blockinfile:
+      path: /etc/nginx/conf.d/default.conf
+      create: yes
+      mode: "u=rw,g=r,o=r"
+      block: |
+        upstream default {
+                server 192.168.56.195:8080;
+                }
+
+        server {
+                listen 80;
+                server_name default;
+                access_log /var/log/nginx/default.log;
+                error_page 400 404 500 502 503 504 /50x.html;
+                location  /50x.html {
+                                      internal;
+                                      root /usr/share/nginx/html;
+                                    }
+                rewrite ^/?$ /hello_world-0.0.1-SNAPSHOT; 
+
+        location /hello_world-0.0.1-SNAPSHOT {
+                    proxy_redirect off;
+                    proxy_set_header Host $http_host;
+                    proxy_set_header X-Forwarded-Server $host; 
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_pass http://192.168.56.197:8080/hello_world-0.0.1-SNAPSHOT/;
+
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-NginX-Proxy true;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+                    proxy_http_version 1.1;
+
+                    }
+                }
+
+#  - name: make site available
+#    file: 
+#      src: /etc/nginx/sites-available/default
+#      dest: /etc/nginx/sites-enabled/default
+#      state: link
+
+  - name: install some more misc stuff
     apt: 
       name: 
         - git
         - default-jdk-headless
-        - nginx
       state: present
       update_cache: yes
-
-  - name: get some conf files from wonderland
-    template: 
-      src: service.conf.j2
-      dest: /etc/nginx/sites-available/{{ service }}
-
-  - name: make site available
-    file: 
-      src: /etc/nginx/sites-available/{{ service }} 
-      dest: /etc/nginx/sites-enabled/{{ service }} 
-      state: link
-
-  - name: restart nginx
-    service: 
-      name: nginx
-      state: restarted
 
   - name: get tomcat from where it's hiding
     git:
@@ -50,3 +104,8 @@
 
   - name: fire that bad boy up
     command: nohup /opt/tomcat/bin/startup.sh
+
+  - name: restart nginx
+    service: 
+      name: nginx
+      state: restarted

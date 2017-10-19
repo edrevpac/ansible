@@ -172,10 +172,18 @@
       - master.key
       - hudson.util.Secret
 
+  - name: wait a while and listen, sip cofee, smoke pipe, smile
+    wait_for:
+      timeout: 10
+
   - name: restart the "thing"... because why not!
     service:
       name: jenkins
       state: restarted
+
+  - name: wait a while and listen, sip cofee, smoke pipe, smile
+    wait_for:
+      timeout: 60
 
 #  - name: enable nginx service to run on boot
 #    service:

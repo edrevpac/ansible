@@ -38,6 +38,10 @@ Vagrant.configure(2) do |config|
 	web.vm.network "public_network"
 	web.vm.network "private_network", ip: "192.168.56.196"
 	web.vm.network "forwarded_port", guest: 80, host: 6060
+#    config.vm.provision "ansible" do |ansi_2|
+#    ansi_2.verbose = "v"
+#    ansi_2.playbook = "install_jenkins.yml"
+#    end
 #  web.vm.provision "shell", inline: 
 #  U=jenkins P="Jenkins001"; adduser $U; echo $P | passwd $U --stdin 
 #  useradd -u jenkins -g users -d /home/jenkins -s /bin/bash -p $(echo Jenkins001 | openssl passwd -1 -stdin) jenkins
@@ -49,6 +53,10 @@ Vagrant.configure(2) do |config|
 	app.vm.network "public_network"
 	app.vm.network "private_network", ip: "192.168.56.197"
 	app.vm.network "forwarded_port", guest: 80, host: 7070
+#    config.vm.provision "ansible" do |ansi_1|
+#    ansi_1.verbose = "v"
+#    ansi_1.playbook = "install_tomcat.yml"
+#    end
   end
 
 #  config.vm.provision "shell", inline: "ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
