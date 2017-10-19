@@ -7,6 +7,11 @@
   environment:
     JAVA_HOME: /usr/lib/jvm/default-java
 
+  vars: 
+    service: tomcat
+    service_domain: tomcat
+    service_port: 8081
+
   tasks:
 
   - name: install misc stuff
@@ -14,19 +19,34 @@
       name: 
         - git
         - default-jdk-headless
+        - nginx
       state: present
       update_cache: yes
+
+  - name: get some conf files from wonderland
+    template: 
+      src: service.conf.j2
+      dest: /etc/nginx/sites-available/{{ service }}
+
+  - name: make site available
+    file: 
+      src: /etc/nginx/sites-available/{{ service }} 
+      dest: /etc/nginx/sites-enabled/{{ service }} 
+      state: link
+
+  - name: restart nginx
+    service: 
+      name: nginx
+      state: restarted
 
   - name: get tomcat from where it's hiding
     git:
       repo: https://github.com/edrevpac/tomcat.git
       dest: /opt/tomcat
 
-  - name: wait a while and listen
+  - name: no time for cofee, or pipe, but you can breathe deeply a few times
     wait_for:
       timeout: 10
 
   - name: fire that bad boy up
-    shell: /opt/tomcat/bin/startup.sh
-    become_user: root
-  
+    command: nohup /opt/tomcat/bin/startup.sh

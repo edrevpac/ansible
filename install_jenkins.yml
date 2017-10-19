@@ -50,7 +50,7 @@
 #    become_user: vagrant
 
 
-  - name: install jdk8 and https support
+  - name: start your day
     apt: 
       name: 
         - apt-transport-https
@@ -58,17 +58,17 @@
       state: present
       update_cache: yes
 
-  - name: import jenkins key
+  - name: remember where you left your keys
     apt_key: 
       url: https://pkg.jenkins.io/debian/jenkins.io.key
       state: present
 
-  - name: add repo
+  - name: make a note not to forget your keys again
     apt_repository:
       repo: deb https://pkg.jenkins.io/debian binary/
       state: present
 
-  - name: install jenkins & prerequisites
+  - name: get to work and do...
     apt:
       name:
         - git
@@ -77,31 +77,31 @@
 #        - nginx
       update_cache: yes
 
-  - name: set new jenkins password
+  - name: some unrelated misc stuff
     shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
 
-  - name: skip jenkins initial setup wizard
+  - name: press "I Accept" on the 22 page disclaimer and the 68 page T&C and fire up the "thing"
     lineinfile:
       path: /etc/default/jenkins
       line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
       insertbefore: BOF
 
-  - name: wait a while and listen
+  - name: wait a while and listen, sip cofee, smoke pipe, smile
     wait_for:
       timeout: 60
 
-  - name: get jenkins initial admin password
+  - name: some more unrelated misc stuff...
     shell: cat /var/lib/jenkins/secrets/initialAdminPassword
     register: password_var
 
-  - name: set jenkins admin password fact
+  - name: do the thing that Alin suggested
     set_fact:
       jenkins_password: '{{ password_var.stdout }}'
 
   - debug:
       msg: '{{ password_var.stdout }}'
 
-  - name: install plugin
+  - name: install a plugin
     jenkins_plugin:
       name: git
       params:
@@ -120,7 +120,7 @@
       state: present
 
 
-  - name: grab the pre-configured files from wonderland
+  - name: grab some configuration files from wonderland
     get_url: 
       url: https://raw.githubusercontent.com/edrevpac/jenkins/master/{{item}}
       dest: /var/lib/jenkins
@@ -145,7 +145,7 @@
       - org.jenkinsci.plugins.gitclient.JGitApacheTool.xml
       - org.jenkinsci.plugins.gitclient.JGitTool.xml
 
-  - name: create the jobs folder
+  - name: create a work folder
     file:
       path: /var/lib/jenkins/jobs/hello_world
       state: directory
@@ -153,7 +153,7 @@
       group: jenkins
 #      mode: 0755 / u=rw,go=r
 
-  - name: grab some other pre-configured files from wonderland
+  - name: grab some more work-related files from wonderland
     get_url: 
       url: https://raw.githubusercontent.com/edrevpac/jenkins/master/jobs/hello_world/config.xml
       dest: /var/lib/jenkins/jobs/hello_world
@@ -161,7 +161,18 @@
       group: jenkins
 #      mode: 0755 / u=rw,go=r
 
-  - name: restart jenkins if required
+  - name: grab some secret pre-configured files from wonderland ;)
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/secrets/{{item}}
+      dest: /var/lib/jenkins/secrets
+      owner: jenkins
+      group: jenkins
+#      mode: 0755 / u=rw,go=r
+    with_items:
+      - master.key
+      - hudson.util.Secret
+
+  - name: restart the "thing"... because why not!
     service:
       name: jenkins
       state: restarted

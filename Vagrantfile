@@ -18,7 +18,7 @@ Vagrant.configure(2) do |config|
 
 #  config.vm.boot_timeout = 300
   config.ssh.insert_key = false
-  #config.ssh.private_key_path = "~/.ssh/id_rsa"
+#  config.ssh.private_key_path = "~/.ssh/id_rsa"
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
     v.cpus = 1
@@ -26,6 +26,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "test" do |yo|
 	yo.vm.box = "bento/debian-9.1-i386"
+  yo.vm.hostname = "test"
 	yo.vm.network "public_network"
 	yo.vm.network "private_network", ip: "192.168.56.195"
 	yo.vm.network "forwarded_port", guest: 80, host: 5050
@@ -33,16 +34,18 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "jenkins" do |web|
 	web.vm.box = "bento/debian-9.1-i386"
+  web.vm.hostname = "jenkins"
 	web.vm.network "public_network"
 	web.vm.network "private_network", ip: "192.168.56.196"
 	web.vm.network "forwarded_port", guest: 80, host: 6060
-  #web.vm.provision "shell", inline: 
-  #  U=jenkins P="Jenkins001"; adduser $U; echo $P | passwd $U --stdin 
-  #  useradd -u jenkins -g users -d /home/jenkins -s /bin/bash -p $(echo Jenkins001 | openssl passwd -1 -stdin) jenkins
+#  web.vm.provision "shell", inline: 
+#  U=jenkins P="Jenkins001"; adduser $U; echo $P | passwd $U --stdin 
+#  useradd -u jenkins -g users -d /home/jenkins -s /bin/bash -p $(echo Jenkins001 | openssl passwd -1 -stdin) jenkins
   end
 
   config.vm.define "tomcat" do |app|
 	app.vm.box = "bento/debian-9.1-i386"
+  app.vm.hostname = "tomcat"
 	app.vm.network "public_network"
 	app.vm.network "private_network", ip: "192.168.56.197"
 	app.vm.network "forwarded_port", guest: 80, host: 7070
