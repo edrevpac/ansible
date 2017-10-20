@@ -72,12 +72,6 @@
                             }
                 }
 
-#  - name: make site available
-#    file: 
-#      src: /etc/nginx/sites-available/default
-#      dest: /etc/nginx/sites-enabled/default
-#      state: link
-
   - name: restart nginx
     service: 
       name: nginx
