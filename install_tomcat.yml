@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: tomcat
 
   become: true
 
@@ -42,52 +42,34 @@
       enabled: yes
       state: started
 
-  - name: get fancy with config files
+  - name: take out the trash
+    file:
+      path: /etc/nginx/conf.d/default.conf
+      state: absent
+
+  - name: get fancy with a new config file
     blockinfile:
       path: /etc/nginx/conf.d/default.conf
       create: yes
       mode: "u=rw,g=r,o=r"
       block: |
-#              server {
-#                      listen          192.168.56.197:80;
-#                      server_name     tomcat;
-#
-#                      location / {
-#                                  proxy_set_header X-Forwarded-Host $host;
-#                                  proxy_set_header X-Forwarded-Server $host;
-#                                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#                                  proxy_pass http://tomcat:8080/;
-#                                  }
-#                      }
-
-        upstream default {
-                server 192.168.56.197:8080;
-                }
+        upstream tomcat {
+                        server 192.168.56.197:8080;
+                        }
 
         server {
                 listen 80;
-                server_name default;
-                error_page 400 404 500 502 503 504 /50x.html;
-                location  /50x.html {
-                                      internal;
-                                      root /usr/share/nginx/html;
-                                    }
-                rewrite ^/?$ /hello_world-0.0.1-SNAPSHOT;
+                server_name tomcat;
 
-        location /hello_world-0.0.1-SNAPSHOT {
-                    proxy_redirect off;
-                    proxy_set_header Host $http_host;
-                    proxy_set_header X-Forwarded-Server $host; 
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_pass http://192.168.56.197:8080/hello_world-0.0.1-SNAPSHOT/;
-
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-NginX-Proxy true;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection "upgrade";
-                    proxy_http_version 1.1;
-
-                    }
+                location / {
+                            proxy_pass http://tomcat/hello_world-0.0.1-SNAPSHOT/;
+                            proxy_set_header Host $host;
+                            proxy_set_header X-Real-IP $remote_addr;
+                            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                            proxy_set_header X-Forwarded-Proto $scheme;
+                            proxy_set_header Connection "";
+                            proxy_http_version 1.1;
+                            }
                 }
 
 #  - name: make site available
@@ -95,6 +77,11 @@
 #      src: /etc/nginx/sites-available/default
 #      dest: /etc/nginx/sites-enabled/default
 #      state: link
+
+  - name: restart nginx
+    service: 
+      name: nginx
+      state: restarted
 
   - name: install some more misc stuff
     apt: 
@@ -115,9 +102,4 @@
       timeout: 10
 
   - name: fire that bad boy up
-    command: nohup /opt/tomcat/bin/startup.sh
-
-  - name: restart nginx
-    service: 
-      name: nginx
-      state: restarted
+    shell: nohup /opt/tomcat/bin/startup.sh start

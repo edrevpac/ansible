@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: jenkins
 
   become: true
 
@@ -58,26 +58,88 @@
       state: present
       update_cache: yes
 
-  - name: remember where you left your keys
+  - name: remember where you left your house keys
     apt_key: 
       url: https://pkg.jenkins.io/debian/jenkins.io.key
       state: present
 
-  - name: make a note not to forget your keys again
+  - name: read random fridge-magnet and make that your "Quote of the day"
+    apt_key: 
+      url: https://nginx.org/keys/nginx_signing.key
+      state: present
+
+  - name: make a note not to forget your house keys again
     apt_repository:
       repo: deb https://pkg.jenkins.io/debian binary/
       state: present
 
-  - name: get to work and do...
+  - name: try to remember where you left your car keys
+    apt_repository:
+      repo: deb http://nginx.org/packages/debian/ stretch nginx
+      state: present
+
+  - name: make a 2nd note for good measure
+    apt_repository:
+      repo: deb-src http://nginx.org/packages/debian/ stretch nginx
+      state: present
+
+  - name: get to work and do a bunch of stuff...
     apt:
       name:
         - git
         - maven
         - jenkins
-#        - nginx
+        - nginx
       update_cache: yes
 
-  - name: some unrelated misc stuff
+  - name: take a nice long lunch break
+    service: 
+      name: nginx
+      enabled: yes
+      state: started
+
+  - name: take out the trash
+    file:
+      path: /etc/nginx/conf.d/default.conf
+      state: absent
+
+  - name: get fancy with a new config file
+    blockinfile:
+      path: /etc/nginx/conf.d/default.conf
+      create: yes
+      mode: "u=rw,g=r,o=r"
+      block: |
+        upstream tomcat {
+                        server 192.168.56.196:8080;
+                        }
+
+        server {
+                listen 80;
+                server_name jenkins;
+
+                location / {
+                            proxy_pass http://jenkins;
+                            proxy_set_header Host $host;
+                            proxy_set_header X-Real-IP $remote_addr;
+                            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                            proxy_set_header X-Forwarded-Proto $scheme;
+                            proxy_set_header Connection "";
+                            proxy_http_version 1.1;
+                            }
+                }
+
+#  - name: make site available
+#    file: 
+#      src: /etc/nginx/sites-available/default
+#      dest: /etc/nginx/sites-enabled/default
+#      state: link
+
+  - name: restart nginx
+    service: 
+      name: nginx
+      state: restarted
+
+  - name: ... and do some unrelated misc stuff
     shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
 
   - name: press "I Accept" on the 22 page disclaimer and the 68 page T&C and fire up the "thing"
@@ -97,9 +159,6 @@
   - name: do the thing that Alin suggested
     set_fact:
       jenkins_password: '{{ password_var.stdout }}'
-
-  - debug:
-      msg: '{{ password_var.stdout }}'
 
   - name: install a plugin
     jenkins_plugin:

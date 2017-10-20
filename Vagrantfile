@@ -17,19 +17,11 @@
 Vagrant.configure(2) do |config|
 
 #  config.vm.boot_timeout = 300
-  config.ssh.insert_key = false
+#  config.ssh.insert_key = false
 #  config.ssh.private_key_path = "~/.ssh/id_rsa"
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
     v.cpus = 1
-  end
-
-  config.vm.define "test" do |yo|
-	yo.vm.box = "bento/debian-9.1-i386"
-  yo.vm.hostname = "test"
-	yo.vm.network "public_network"
-	yo.vm.network "private_network", ip: "192.168.56.195"
-	yo.vm.network "forwarded_port", guest: 80, host: 5050
   end
 
   config.vm.define "jenkins" do |web|
@@ -38,13 +30,6 @@ Vagrant.configure(2) do |config|
 	web.vm.network "public_network"
 	web.vm.network "private_network", ip: "192.168.56.196"
 	web.vm.network "forwarded_port", guest: 80, host: 6060
-#    config.vm.provision "ansible" do |ansi_2|
-#    ansi_2.verbose = "v"
-#    ansi_2.playbook = "install_jenkins.yml"
-#    end
-#  web.vm.provision "shell", inline: 
-#  U=jenkins P="Jenkins001"; adduser $U; echo $P | passwd $U --stdin 
-#  useradd -u jenkins -g users -d /home/jenkins -s /bin/bash -p $(echo Jenkins001 | openssl passwd -1 -stdin) jenkins
   end
 
   config.vm.define "tomcat" do |app|
@@ -53,34 +38,28 @@ Vagrant.configure(2) do |config|
 	app.vm.network "public_network"
 	app.vm.network "private_network", ip: "192.168.56.197"
 	app.vm.network "forwarded_port", guest: 80, host: 7070
-#    config.vm.provision "ansible" do |ansi_1|
-#    ansi_1.verbose = "v"
-#    ansi_1.playbook = "install_tomcat.yml"
-#    end
   end
 
 #  config.vm.provision "shell", inline: "ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
   config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
-#  config.vm.provision "ansible" do |ansible|
-#    ansible.playbook = "~/Documents/git/ansible/playlist.yml"
-#    ansible.host_vars = {
-#      "test" => {
-#        "ansible_host" => "192.168.56.195",
-#        "ansible_port" => 22,
-#        "ansible_user" => "vagrant"
-#        },
-#      "jenkins" => {
-#        "ansible_host" => "192.168.56.196",
-#        "ansible_port" => 22,
-#        "ansible_user" => "vagrant"
-#        },
-#      "tomcat" => {
-#        "ansible_host" => "192.168.56.197",
-#        "ansible_port" => 22,
-#        "ansible_user" => "vagrant"
-#        }
-#    }
-#  end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playlist.yml"
+    ansible.verbose = "v"
+    ansible.host_vars = {
+      "jenkins" => {
+        "ansible_ssh_host" => "192.168.56.196",
+        "ansible_ssh_port" => 22,
+        "ansible_ssh_user" => 'vagrant',
+        "ansible_ssh_private_key_file" => "~/.ssh/id_rsa"
+        },
+      "tomcat" => {
+        "ansible_ssh_host" => "192.168.56.197",
+        "ansible_ssh_port" => 22,
+        "ansible_ssh_user" => 'vagrant',
+        "ansible_ssh_private_key_file" => "~/.ssh/id_rsa"
+        }
+    }
+  end
 
 end
 
