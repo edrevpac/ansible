@@ -16,35 +16,31 @@
 
 Vagrant.configure(2) do |config|
 
-#  config.vm.boot_timeout = 300
-#  config.ssh.insert_key = false
-#  config.ssh.private_key_path = "~/.ssh/id_rsa"
+  config.ssh.insert_key = false
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
     v.cpus = 1
   end
 
   config.vm.define "jenkins" do |web|
-	web.vm.box = "bento/debian-9.1-i386"
-  web.vm.hostname = "jenkins"
-	web.vm.network "public_network"
-	web.vm.network "private_network", ip: "192.168.56.196"
-	web.vm.network "forwarded_port", guest: 80, host: 6060
+	   web.vm.box = "bento/debian-9.1-i386"
+     web.vm.hostname = "jenkins"
+	   web.vm.network "public_network"
+	   web.vm.network "private_network", ip: "192.168.56.196"
   end
 
   config.vm.define "tomcat" do |app|
-	app.vm.box = "bento/debian-9.1-i386"
-  app.vm.hostname = "tomcat"
-	app.vm.network "public_network"
-	app.vm.network "private_network", ip: "192.168.56.197"
-	app.vm.network "forwarded_port", guest: 80, host: 7070
+	   app.vm.box = "bento/debian-9.1-i386"
+     app.vm.hostname = "tomcat"
+	   app.vm.network "public_network"
+	   app.vm.network "private_network", ip: "192.168.56.197"
   end
 
 #  config.vm.provision "shell", inline: "ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
   config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "playlist.yml"
-#    ansible.verbose = "v"
+    ansible.verbose = "v"
     ansible.host_vars = {
       "jenkins" => {
         "ansible_ssh_host" => "192.168.56.196",

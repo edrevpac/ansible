@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+
+  become: true
+
+  tasks:
+
+  - name: Install Git
+    apt: 
+      name: git
+      state: present
+      update_cache: yes
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success

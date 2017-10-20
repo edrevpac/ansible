@@ -1,0 +1,147 @@
+---
+
+- hosts: jenkins
+
+  become: true
+
+  environment:
+    JAVA_HOME: /usr/lib/jvm/default-java
+
+  tasks:
+     
+#  - name: ... and do some unrelated misc stuff
+#    shell: (echo 123 ; sleep 1; echo 123) | passwd jenkins
+      
+  - name: Skip Jenkins Initial Setup Wizard
+    lineinfile:
+      path: /etc/default/jenkins
+      line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
+      insertbefore: BOF
+      
+#  - name: wait a while and listen, sip cofee, smoke pipe, smile
+#    wait_for:
+#      timeout: 60
+      
+  - name: Get Initial Admin Password 
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    register: password_var
+
+  - name: Save the password asa fact
+    set_fact:
+      jenkins_password: '{{ password_var.stdout }}'
+
+  - name: Install Git plugin for Jenkins
+    jenkins_plugin:
+      name: git
+      params:
+        url: http://192.168.56.196:8080
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
+      state: present
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+      
+  - name: Install Deploy plugin for Jenkins
+    jenkins_plugin:
+      name: deploy
+      params:
+        url: http://192.168.56.196:8080
+        url_username: admin
+        url_password: '{{ jenkins_password }}'
+      state: present
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+      
+  - name: Wait 5 seconds for good measure
+    wait_for:
+      timeout: 5
+
+#  - name: Restart Jenkins
+#    service:
+#      name: jenkins
+#      state: restarted
+#    register: command_result
+#    retries: 3
+#    delay: 3
+#    until: command_result | success
+      
+#  - name: wait a while and listen, sip cofee, smoke pipe, smile
+#    wait_for:
+#      timeout: 60
+
+  - name: Grab the Jenkis configuration files from GitHub
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/{{item}}
+      dest: /var/lib/jenkins
+      owner: jenkins
+      group: jenkins
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+    with_items:
+      - config.xml
+      - credentials.xml
+      - hudson.model.Job.serverCookie
+      - hudson.model.UpdateCenter.xml
+      - hudson.plugins.git.GitSCM.xml
+      - hudson.plugins.git.GitTool.xml
+      - hudson.tasks.Mailer.xml
+      - hudson.tasks.Maven.xml
+      - hudson.tasks.Shell.xml
+      - hudson.triggers.SCMTrigger.xml
+      - jenkins.model.ArtifactManagerConfiguration.xml
+      - jenkins.model.DownloadSettings.xml
+      - jenkins.model.JenkinsLocationConfiguration.xml
+      - jenkins.mvn.GlobalMavenConfig.xml
+      - org.jenkinsci.plugins.gitclient.JGitApacheTool.xml
+      - org.jenkinsci.plugins.gitclient.JGitTool.xml
+
+  - name: Create the job folder
+    file:
+      path: /var/lib/jenkins/jobs/hello_world
+      state: directory
+      owner: jenkins
+      group: jenkins
+
+  - name: Grab the job configuration
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/jobs/hello_world/config.xml
+      dest: /var/lib/jenkins/jobs/hello_world
+      owner: jenkins
+      group: jenkins
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+      
+  - name: Grab job security credentials
+    get_url: 
+      url: https://raw.githubusercontent.com/edrevpac/jenkins/master/secrets/{{item}}
+      dest: /var/lib/jenkins/secrets
+      owner: jenkins
+      group: jenkins
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+    with_items:
+      - master.key
+      - hudson.util.Secret
+      
+  - name: Wait 5 seconds for good measure
+    wait_for:
+      timeout: 5
+
+  - name: Restart Jenkins so that everything is put in action
+    service:
+      name: jenkins
+      state: restarted
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success

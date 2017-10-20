@@ -1,0 +1,19 @@
+---
+
+- hosts: jenkins
+
+  become: true
+
+  environment:
+    JAVA_HOME: /usr/lib/jvm/default-java
+
+  tasks:
+
+  - name: Install Maven 3.5
+    apt:
+      name: maven
+      update_cache: yes
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success

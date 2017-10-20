@@ -1,0 +1,56 @@
+---
+
+- hosts: all
+
+  become: true
+
+  environment:
+    JAVA_HOME: /usr/lib/jvm/default-java
+
+  tasks:
+
+  - name: Import Nginx APT key
+    apt_key: 
+      url: https://nginx.org/keys/nginx_signing.key
+      state: present
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+
+  - name: Add Nginx package APT repository
+    apt_repository:
+      repo: deb http://nginx.org/packages/debian/ stretch nginx
+      state: present
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+
+  - name: Add Nginx source APT repository
+    apt_repository:
+      repo: deb-src http://nginx.org/packages/debian/ stretch nginx
+      state: present
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+
+  - name: Install Nginx 1.12
+    apt:
+      name: maven
+      update_cache: yes
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+
+#  - name: Start Nginx
+#    service: 
+#      name: nginx
+#      enabled: yes
+#      state: started
+#    register: command_result
+#    retries: 3
+#    delay: 3
+#    until: command_result | success
