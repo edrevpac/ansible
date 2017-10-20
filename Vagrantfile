@@ -14,7 +14,14 @@
   # boxes at https://atlas.hashicorp.com/search.
   # config.vm.box = "ubuntu/trusty64"
 
-system("ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''")
+#system("ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''")
+
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+        echo 'How about anew key? If YES, you will need to add it to GitHub for everything else to work!'
+        ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+    fi
+")
 
 
 Vagrant.configure(2) do |config|

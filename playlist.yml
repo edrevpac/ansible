@@ -1,7 +1,7 @@
 - import_playbook: install_apt_https.yml
 - import_playbook: install_git.yml
-- import_playbook: install_tomcat.yml
 - import_playbook: install_java.yml
+- import_playbook: install_tomcat.yml
 - import_playbook: install_nginx.yml
 - import_playbook: install_maven.yml
 - import_playbook: install_jenkins.yml
