@@ -14,6 +14,9 @@
   # boxes at https://atlas.hashicorp.com/search.
   # config.vm.box = "ubuntu/trusty64"
 
+system("ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''")
+
+
 Vagrant.configure(2) do |config|
 
   config.ssh.insert_key = false
@@ -40,7 +43,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "playlist.yml"
-    ansible.verbose = "v"
+#    ansible.verbose = "v"
     ansible.host_vars = {
       "jenkins" => {
         "ansible_ssh_host" => "192.168.56.196",

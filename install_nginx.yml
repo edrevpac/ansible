@@ -38,7 +38,7 @@
 
   - name: Install Nginx 1.12
     apt:
-      name: maven
+      name: nginx
       update_cache: yes
     register: command_result
     retries: 3

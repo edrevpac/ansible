@@ -35,3 +35,17 @@
     retries: 3
     delay: 3
     until: command_result | success
+
+  - name: Start Jenkins
+    service:
+      name: jenkins
+      state: started
+      enabled: yes
+    register: command_result
+    retries: 3
+    delay: 3
+    until: command_result | success
+
+  - name: Wait 60 seconds for good measure
+    wait_for:
+      timeout: 60

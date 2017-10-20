@@ -23,4 +23,8 @@
       timeout: 5
 
   - name: Start the Tomcat engine
-    shell: nohup /opt/tomcat/bin/startup.sh start
+    command: "nohup /opt/tomcat/bin/startup.sh start"
+    register: command_result
+    retries: 3
+    delay: 3
+    become_user: root
