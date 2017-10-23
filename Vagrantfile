@@ -35,14 +35,14 @@ Vagrant.configure(2) do |config|
   config.vm.define "jenkins" do |web|
 	   web.vm.box = "bento/debian-9.1-i386"
      web.vm.hostname = "jenkins"
-	   web.vm.network "public_network"
+#	   web.vm.network "public_network"
 	   web.vm.network "private_network", ip: "192.168.56.196"
   end
 
   config.vm.define "tomcat" do |app|
 	   app.vm.box = "bento/debian-9.1-i386"
      app.vm.hostname = "tomcat"
-	   app.vm.network "public_network"
+#	   app.vm.network "public_network"
 	   app.vm.network "private_network", ip: "192.168.56.197"
   end
 

@@ -87,7 +87,7 @@
       - config.xml
       - credentials.xml
       - hudson.model.Job.serverCookie
-      - hudson.model.UpdateCenter.xml
+#      - hudson.model.UpdateCenter.xml
       - hudson.plugins.git.GitSCM.xml
       - hudson.plugins.git.GitTool.xml
       - hudson.tasks.Mailer.xml
