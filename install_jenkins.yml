@@ -11,7 +11,7 @@
 
   - name: Import Jenkins APT key
     apt_key: 
-      url: https://pkg.jenkins.io/debian/jenkins.io.key
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
       state: present
     register: command_result
     retries: 3
@@ -20,14 +20,14 @@
       
   - name: Add Jenkins package APT repository
     apt_repository:
-      repo: deb https://pkg.jenkins.io/debian binary/
+      repo: deb https://pkg.jenkins.io/debian-stable binary/
       state: present
     register: command_result
     retries: 3
     delay: 3
     until: command_result | success
       
-  - name: Install Jenkins 2.85
+  - name: Install Jenkins LTS
     apt:
       name: jenkins
       update_cache: yes
