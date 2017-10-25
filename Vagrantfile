@@ -18,7 +18,7 @@
 
 system("
     if [ #{ARGV[0]} = 'up' ]; then
-        echo 'How about anew key? If YES, you will need to add it to GitHub for everything else to work!'
+        echo 'How about a new key? If YES, you will need to add it to GitHub for everything else to work!'
         ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
     fi
 ")
@@ -28,7 +28,7 @@ Vagrant.configure(2) do |config|
 
   config.ssh.insert_key = false
   config.vm.provider "virtualbox" do |v|
-    v.memory = 1024
+    v.memory = 512
     v.cpus = 1
   end
 

@@ -45,6 +45,8 @@
     delay: 3
     until: command_result | success
 
+  - pause:
+
 #  - name: Start Nginx
 #    service: 
 #      name: nginx

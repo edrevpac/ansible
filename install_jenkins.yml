@@ -49,3 +49,5 @@
   - name: Wait 60 seconds for good measure
     wait_for:
       timeout: 60
+
+  - pause:

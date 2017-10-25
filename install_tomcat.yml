@@ -18,9 +18,7 @@
     delay: 3
     until: command_result | success
 
-  - name: Wait 5 seconds for good measure
-    wait_for:
-      timeout: 5
+  - pause:
 
   - name: Start the Tomcat engine
     command: "nohup /opt/tomcat/bin/startup.sh start"

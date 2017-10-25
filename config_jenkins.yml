@@ -30,6 +30,8 @@
     set_fact:
       jenkins_password: '{{ password_var.stdout }}'
 
+  - pause:
+
   - name: Install Git plugin for Jenkins
     jenkins_plugin:
       name: git
