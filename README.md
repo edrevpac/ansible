@@ -2,7 +2,7 @@
 Orchestration Training
 
 This little project assumes:
-  Ansible 2.4.0.0
+  Ansible 2.4.0.0 \n
   Vagrant 2.0
   Virtualbox 5.1
   Tomcat 8.5
@@ -12,4 +12,4 @@ This little project assumes:
   Java 8
   Debian 9.1 x86
 
-If you use something lese, results may vary :)
+If you use something else, results may (will) vary :)
