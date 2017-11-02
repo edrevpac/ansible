@@ -2,7 +2,8 @@
 Orchestration Training
 
 This little project assumes:
-  Ansible 2.4.0.0 \n
+  Ansible 2.4.0.0
+  <br>
   Vagrant 2.0
   Virtualbox 5.1
   Tomcat 8.5
