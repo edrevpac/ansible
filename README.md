@@ -1,9 +1,7 @@
 #
 Orchestration Training
 
-
 This little project assumes:
-
 <br>  Ansible 2.4.0.0
 <br>  Vagrant 2.0
 <br>  Virtualbox 5.1
@@ -13,6 +11,5 @@ This little project assumes:
 <br>  Nginx 1.12
 <br>  Java 8
 <br>  Debian 9.1 x86
-
 
 If you use something else, results may (will) vary :)
