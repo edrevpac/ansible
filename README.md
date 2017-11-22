@@ -6,7 +6,7 @@ This little project assumes:
 <br>  Vagrant 2.0.0
 <br>  Virtualbox 5.1
 <br>  Tomcat 8.5
-<br>  Jenkins 2.75 (LTS channel at the time)
+<br>  Jenkins 2.73 (LTS channel at the time)
 <br>  Maven 3.5
 <br>  Nginx 1.12
 <br>  Java 8
